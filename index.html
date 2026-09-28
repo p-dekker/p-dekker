@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Märklin Z Search</title>
+  
+  <!-- PWA Capabilities for Android -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#d32f2f">
+  
+  <!-- Manifest for Android "Add to Home Screen" -->
+  <link rel="manifest" href="data:application/manifest+json,{
+    &quot;name&quot;: &quot;Märklin Z Searcher&quot;,
+    &quot;short_name&quot;: &quot;MZ Search&quot;,
+    &quot;start_url&quot;: &quot;.&quot;,
+    &quot;display&quot;: &quot;standalone&quot;,
+    &quot;background_color&quot;: &quot;#f5f5f5&quot;,
+    &quot;theme_color&quot;: &quot;#d32f2f&quot;,
+    &quot;icons&quot;: [{
+      &quot;src&quot;: &quot;https://via.placeholder.com/192/d32f2f/ffffff?text=Z&quot;,
+      &quot;sizes&quot;: &quot;192x192&quot;,
+      &quot;type&quot;: &quot;image/png&quot;
+    }]
+  }">
+
+  <style>
+    :root {
+      --primary: #d32f2f;
+      --bg: #f4f6f8;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background-color: var(--bg);
+      color: #333;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      margin: 0;
+      color: var(--primary);
+      font-size: 1.6rem;
+    }
+    .search-box {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin: 0 auto 20px auto;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .input-group {
+      display: flex;
+      gap: 8px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+    button {
+      padding: 12px 20px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:active {
+      opacity: 0.8;
+    }
+    .results {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .site-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .site-card h3 {
+      margin-top: 0;
+      color: #111;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .open-btn {
+      background: #1976d2;
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      text-decoration: none;
+      color: white;
+      border-radius: 6px;
+    }
+    iframe {
+      width: 100%;
+      height: 350px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Märklin Z Finder</h1>
+  </div>
+
+  <div class="search-box">
+    <label for="artNum">Märklin Article Number:</label>
+    <div class="input-group">
+      <input type="text" id="artNum" placeholder="e.g. 88544" inputmode="numeric">
+      <button onclick="performSearch()">Search</button>
+    </div>
+  </div>
+
+  <div id="results" class="results" style="display:none;">
+    
+    <!-- 3railwiki.nl -->
+    <div class="site-card">
+      <h3>
+        3rail Wiki (NL)
+        <a id="link-3rail" class="open-btn" target="_blank">Open Full Site</a>
+      </h3>
+      <iframe id="frame-3rail"></iframe>
+    </div>
+
+    <!-- Lokmuseum.de -->
+    <div class="site-card">
+      <h3>
+        Lokmuseum (DE)
+        <a id="link-lokmuseum" class="open-btn" target="_blank">Open Full Site</a>
+      </h3>
+      <iframe id="frame-lokmuseum"></iframe>
+    </div>
+
+    <!-- Marklin.nl -->
+    <div class="site-card">
+      <h3>
+        Märklin NL Database
+        <a id="link-marklin" class="open-btn" target="_blank">Open Full Site</a>
+      </h3>
+      <iframe id="frame-marklin"></iframe>
+    </div>
+
+  </div>
+
+  <script>
+    function performSearch() {
+      const query = document.getElementById('artNum').value.trim();
+      if (!query) return;
+
+      // Construct target URLs
+      const url3rail = `https://wiki.3rail.nl/index.php?search=${encodeURIComponent(query)}`;
+      const urlLokmuseum = `https://www.lokmuseum.de/shop_artikel.php?Suchen=${encodeURIComponent(query)}`;
+      const urlMarklin = `https://www.marklin.nl/service/productdatabank?tx_mklmkl_productdatabank%5Baction%5D=search&tx_mklmkl_productdatabank%5Bcontroller%5D=Product&tx_mklmkl_productdatabank%5BsearchString%5D=${encodeURIComponent(query)}`;
+
+      // Update external links
+      document.getElementById('link-3rail').href = url3rail;
+      document.getElementById('link-lokmuseum').href = urlLokmuseum;
+      document.getElementById('link-marklin').href = urlMarklin;
+
+      // Update embedded iframe views
+      document.getElementById('frame-3rail').src = url3rail;
+      document.getElementById('frame-lokmuseum').src = urlLokmuseum;
+      document.getElementById('frame-marklin').src = urlMarklin;
+
+      // Unhide results container
+      document.getElementById('results').style.display = 'flex';
+    }
+
+    // Register Service Worker for PWA functionality
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('fetch', function(e) {
+          e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob));
+    }
+  </script>
+</body>
+</html>
